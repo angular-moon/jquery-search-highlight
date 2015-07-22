@@ -1,0 +1,14 @@
+{
+    "version": "0.33.0",
+    "description": "搜索页面关键字高亮显示",
+    "name": "jquery-search-highlight",
+    "main": "jquery.searchHighlight.js",
+    "dependencies": [
+        "jquery@1.8.3"
+    ],
+    "shim": {
+        "jquery.searchHighlight.js": {
+            "deps": ["jquery"]
+        }
+    }
+}
