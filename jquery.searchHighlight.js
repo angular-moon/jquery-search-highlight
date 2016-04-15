@@ -98,7 +98,7 @@
       
       return query;
     },
-		regexAccent : [
+    regexAccent : [
       [/[\xC0-\xC5\u0100-\u0105]/ig,'a'],
       [/[\xC7\u0106-\u010D]/ig,'c'],
       [/[\xC8-\xCB]/ig,'e'],
@@ -112,8 +112,8 @@
       [/[\x91\x92\u2018\u2019]/ig,'\'']
     ],
     matchAccent : /[\x91\x92\xC0-\xC5\xC7-\xCF\xD1-\xD6\xD8-\xDC\xFF\u0100-\u010D\u015A-\u0167\u2018\u2019]/ig,  
-		replaceAccent: function(q) {
-		  SearchHighlight.matchAccent.lastIndex = 0;
+    replaceAccent: function(q) {
+      SearchHighlight.matchAccent.lastIndex = 0;
       if(SearchHighlight.matchAccent.test(q)) {
         for(var i=0,l=SearchHighlight.regexAccent.length;i<l;i++)
           q = q.replace(SearchHighlight.regexAccent[i][0],SearchHighlight.regexAccent[i][1]);
@@ -121,11 +121,15 @@
       return q;
     },
     escapeRegEx : /((?:\\{2})*)([[\]{}*?|])/g, //the special chars . and + are already gone at this point because they are considered split chars
+    escapeAllRegEx : /[\(\)\[\]\?\.\+\*\^\$]/g,
     buildReplaceTools : function(query) {
         var re = [], regex;
         $.each(query,function(i,n){
-            if(n = SearchHighlight.replaceAccent(n).replace(SearchHighlight.escapeRegEx,"$1\\$2"))
+            if(n = SearchHighlight.replaceAccent(n).replace(SearchHighlight.escapeRegEx,"$1\\$2")){
+              SearchHighlight.escapeAllRegEx.lastIndex = 0;
+              n = n.replace(SearchHighlight.escapeAllRegEx, "\\$&");
               re.push(n);        
+            }
         });
         
         regex = re.join("|");
@@ -161,14 +165,14 @@
         for(var startIndex=0,endIndex=el.childNodes.length;startIndex<endIndex;startIndex++) {
           var item = el.childNodes[startIndex];
           if ( item.nodeType != 8 ) {//comment node
-  				  //text node
+            //text node
             if(item.nodeType==3) {
               var text = item.data, textNoAcc = SearchHighlight.replaceAccent(text);
               var newtext="",match,index=0;
               SearchHighlight.regex.lastIndex = 0;
               while(match = SearchHighlight.regex.exec(textNoAcc)) {
                 newtext += text.substr(index,match.index-index)+'<span class="'+
-                SearchHighlight.subs[match[matchIndex].toLowerCase()]+'">'+text.substr(match.index,match[0].length)+"</span>";
+                (SearchHighlight.subs[match[matchIndex].toLowerCase()]||SearchHighlight.options.style_name)+'">'+text.substr(match.index,match[0].length)+"</span>";
                 index = match.index+match[0].length;
               }
               if(newtext) {
@@ -182,7 +186,7 @@
             } else {
               if(item.nodeType==1 && item.nodeName.search(SearchHighlight.nosearch)==-1)
                   SearchHighlight.hiliteTree(item,query,noHighlight);
-            }	
+            } 
           }
         }    
     }
